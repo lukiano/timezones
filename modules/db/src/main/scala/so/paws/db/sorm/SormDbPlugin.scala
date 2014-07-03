@@ -1,5 +1,6 @@
 package so.paws.db.sorm
 
+import play.api.Play
 import sorm.{Entity, Instance, InitMode}
 import scala.reflect.runtime.universe
 import so.paws.db.DbPlugin
@@ -17,7 +18,7 @@ class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
 
     object db extends Instance(
       entities = entities,
-      url = "jdbc:h2:./db/paws;AUTO_SERVER=TRUE",
+      url = Play.current.configuration.getString("db.default.url").getOrElse(""), // "jdbc:h2:./db/paws;AUTO_SERVER=TRUE",
       user = "sa",
       password = "",
       initMode = InitMode.DropAllCreate,
