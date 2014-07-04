@@ -17,7 +17,7 @@ class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
     application.configuration.getStringList("sorm.entities").get.foreach ( e =>
       entities ++= getEntities(application, e)
     )
-    Option(System.getenv("DATABASE_URL")).orElse(Play.current.configuration.getString("db.default.url")) match {
+    Option(System.getenv("DATABASE_URL")).orElse(Play.current.configuration.getString("sorm.url")) match {
       case Some(url) =>
         val dbUri = new URI(url)
         new Instance(
@@ -31,8 +31,8 @@ class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
       case None =>
         new Instance(
           entities = entities,
-          url = "jdbc:h2:./db/paws;AUTO_SERVER=TRUE",
-          user = "",
+          url = "jdbc:h2:mem:my-app-db",
+          user = "sa",
           password = "",
           initMode = InitMode.DropAllCreate,
           poolSize = 32
