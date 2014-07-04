@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/paws -Dhttp.port=${PORT} ${java_opts} -Ddb.default.driver=org.postgresql.Driver -Ddb.default.url=${DATABASE_URL} -J-javaagent:newrelic/newrelic.jar -J-Dnewrelic.config.file=newrelic/newrelic.yml
+web: target/universal/stage/bin/paws -Dhttp.port=${PORT} ${java_opts} -Ddb.default.driver=org.postgresql.Driver -Ddb.default.url=$DATABASE_URL -J-javaagent:newrelic/newrelic.jar -J-Dnewrelic.config.file=newrelic/newrelic.yml
