@@ -1,0 +1,1 @@
+web: target/universal/stage/bin/paws -Dhttp.port=${PORT} ${java_opts} -DapplyEvolutions.default=true -Ddb.default.driver=org.postgresql.Driver -J-javaagent:newrelic/newrelic.jar -J-Dnewrelic.config.file=newrelic/newrelic.yml

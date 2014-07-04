@@ -19,3 +19,7 @@ lazy val users = project.in(file("modules/users"))
 lazy val paws = project.in(file("."))
   .dependsOn(common, db, users)
   .aggregate(common, db, users)
+
+libraryDependencies ++= Seq(
+  "com.newrelic.agent.java" % "newrelic-agent" % "3.8.0"
+)
