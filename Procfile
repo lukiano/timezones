@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/paws -Dhttp.port=$PORT -J-javaagent:newrelic/newrelic.jar -J-Dnewrelic.config.file=newrelic/newrelic.yml
+web: target/universal/stage/bin/paws -J-javaagent:newrelic/newrelic.jar -J-Dnewrelic.config.file=newrelic/newrelic.yml
