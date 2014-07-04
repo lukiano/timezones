@@ -1,8 +1,8 @@
 import sbt._
 
-organization := "so.paws"
+organization := "com.toptal"
 
-name := "paws"
+name := "timezoneviewer"
 
 version := "1.0-SNAPSHOT"
 
@@ -16,7 +16,7 @@ lazy val common = project.in(file("modules/common"))
 lazy val users = project.in(file("modules/users"))
   .dependsOn(common, db).aggregate(common, db)
 
-lazy val paws = project.in(file("."))
+lazy val root = project.in(file("."))
   .dependsOn(common, db, users)
   .aggregate(common, db, users)
 
