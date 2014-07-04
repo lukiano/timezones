@@ -21,5 +21,6 @@ lazy val paws = project.in(file("."))
   .aggregate(common, db, users)
 
 libraryDependencies ++= Seq(
-  "com.newrelic.agent.java" % "newrelic-agent" % "3.8.0"
+  "com.newrelic.agent.java" % "newrelic-agent" % "3.8.0",
+  "com.newrelic.agent.java" % "newrelic-api" % "3.8.0"
 )

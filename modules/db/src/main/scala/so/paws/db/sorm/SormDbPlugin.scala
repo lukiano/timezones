@@ -17,18 +17,27 @@ class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
     application.configuration.getStringList("sorm.entities").get.foreach ( e =>
       entities ++= getEntities(application, e)
     )
-    val dbUri = new URI(System.getenv("DATABASE_URL"))
-    val username = dbUri.getUserInfo().split(":")(0)
-    val password = dbUri.getUserInfo().split(":")(1)
-    new Instance(
-      entities = entities,
-      url = "jdbc:postgresql://"+ dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath(),
-    //Play.current.configuration.getString("db.default.url").getOrElse(""), // "jdbc:h2:./db/paws;AUTO_SERVER=TRUE",
-      user = username,
-      password = password,
-      initMode = InitMode.DropAllCreate,
-      poolSize = 100
-    )
+    Option(System.getenv("DATABASE_URL")).orElse(Play.current.configuration.getString("db.default.url")) match {
+      case Some(url) =>
+        val dbUri = new URI(url)
+        new Instance(
+          entities = entities,
+          url = "jdbc:postgresql://"+ dbUri.getHost + (if (dbUri.getPort == -1) "" else ':' + dbUri.getPort) + dbUri.getPath,
+          user = dbUri.getUserInfo.split(":")(0),
+          password = dbUri.getUserInfo.split(":")(1),
+          initMode = InitMode.DropAllCreate,
+          poolSize = 64
+        )
+      case None =>
+        new Instance(
+          entities = entities,
+          url = "jdbc:h2:./db/paws;AUTO_SERVER=TRUE",
+          user = "",
+          password = "",
+          initMode = InitMode.DropAllCreate,
+          poolSize = 32
+        )
+    }
   }
 
   def getEntities(application: Application, ref: String): Set[Entity] = {
