@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/timezoneviewer
+web: target/universal/stage/bin/timezoneviewer -Dhttp.port=$PORT
