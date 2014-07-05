@@ -1,4 +1,4 @@
-organization := "so.paws"
+organization := "com.toptal.tzv"
 
 name := "db"
 
