@@ -19,8 +19,15 @@ class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
     Play.current.configuration.getString("sorm.url") match {
       case Some(url) =>
         val dbUri = new URI(url)
-        val urlString = "jdbc:postgresql://"+ dbUri.getHost + (if (dbUri.getPort == -1) "" else ':' + dbUri.getPort) + dbUri.getPath
+        val port = if (dbUri.getPort == -1) "" else ":" + dbUri.getPort
+        val urlString = "jdbc:postgresql://"+ dbUri.getHost + port + dbUri.getPath
+/*
+        Logger(classOf[SormDbPlugin]).info(url)
+        Logger(classOf[SormDbPlugin]).info(dbUri.getHost)
+        Logger(classOf[SormDbPlugin]).info(Integer.toString(dbUri.getPort))
+        Logger(classOf[SormDbPlugin]).info(dbUri.getUserInfo)
         Logger(classOf[SormDbPlugin]).info(urlString)
+*/
         new Instance(
           entities = entities,
           url = urlString,
