@@ -4,7 +4,7 @@ import securesocial.core._
 import org.joda.time.DateTime
 import securesocial.core.IdentityId
 import securesocial.core.providers.Token
-import models.users.{UserProfile, UserDb}
+import models.users.{TimeZone, UserProfile, UserDb}
 import so.paws.db.DbPlugin
 import com.typesafe.plugin._
 import sorm.{Persisted, Instance}
@@ -43,8 +43,10 @@ object SormUserDb extends UserDb {
           identity.oAuth2Info.map(e => db.save(e)),
           identity.passwordInfo.map(e => db.save(e))
         )
+        val newUserProfile = UserProfile(identity.identityId, Set())
         db.transaction {
           db.save(newUser)
+          db.save(newUserProfile)
         }
         newUser
       case Some(existingUser) =>
@@ -52,8 +54,14 @@ object SormUserDb extends UserDb {
         val updatedUser = existingUser.copy(identityId = identity.identityId, firstName = identity.firstName,
           lastName = identity.lastName, fullName = identity.fullName, email = identity.email, avatarUrl = identity.avatarUrl, authMethod = identity.authMethod,
           oAuth1Info = identity.oAuth1Info, oAuth2Info = identity.oAuth2Info, passwordInfo = passInfo)
-        db.transaction {
-          db.save(updatedUser)
+        db.query[UserProfile].whereEqual("identityId", existingUser.identityId).fetchOne() match {
+          case None => throw new IllegalStateException("Inconsistency between SocialUser and UserProfile")
+          case Some(existingUserProfile) =>
+            val updatedUserProfile = existingUserProfile.copy(identityId = identity.identityId, existingUserProfile.timezones)
+            db.transaction {
+              db.save(updatedUser)
+              db.save(updatedUserProfile)
+            }
         }
         updatedUser
     }
@@ -61,6 +69,14 @@ object SormUserDb extends UserDb {
 
   def save(token: Token) = {
     db.save(token)
+  }
+
+  def save(profile: UserProfile) = {
+    db.save(profile)
+  }
+
+  def save(tz: TimeZone) = {
+    db.save(tz)
   }
 
   def findToken(uuid: String): Option[Token] = {
@@ -83,7 +99,7 @@ object SormUserDb extends UserDb {
     db.query[Token].whereEqual("uuid", tokenUuid).fetchOne().map(t => t.email)
   }
 
-  override def findUserProfileByUsername(username: String): Option[UserProfile] = {
-    db.query[UserProfile].whereEqual("username", username).fetchOne()
+  override def findUserProfile(identityId: IdentityId): Option[UserProfile] = {
+    db.query[UserProfile].whereEqual("identityId", identityId).fetchOne()
   }
 }

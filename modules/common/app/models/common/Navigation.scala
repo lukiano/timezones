@@ -3,9 +3,6 @@ package models.common
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-/**
- * Created by jd on 1/27/14.
- */
 case class Navigation(page: String, menus: Seq[NavigationMenu])
 case class NavigationMenu(items: Seq[NavigationItem], position: String, dropDown: Boolean = false)
 case class NavigationItem(display: String, route: String, css: String = "")

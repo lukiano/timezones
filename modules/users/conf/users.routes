@@ -2,6 +2,8 @@ GET         /generate-name                 controllers.users.sorm.SormUsers.gene
 GET         /email/:token                  controllers.users.sorm.SormUsers.findEmailByTokenUuid(token)
 GET         /get-users                     controllers.users.sorm.SormUsers.getUsers
 GET         /navigation                    controllers.users.sorm.SormUsers.navigation
+GET         /partials/home.tpl.html        controllers.users.sorm.SormUsers.home
+POST        /timezone/add                  controllers.users.sorm.SormUsers.addTimeZone
 
 # Login page
 GET         /login                         securesocial.controllers.LoginPage.login

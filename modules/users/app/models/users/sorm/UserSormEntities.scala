@@ -1,6 +1,6 @@
 package models.users.sorm
 
-import models.users.{UserProfile, Authority}
+import models.users.{TimeZone, UserProfile, Authority}
 import plugins.users.AuthenticatorEntity
 import securesocial.core._
 import securesocial.core.IdentityId
@@ -16,7 +16,8 @@ object UserSormEntities extends SormEntities {
     Set(
       Entity[Authority](unique = Set() + Seq("identityId", "name")),
       Entity[AuthenticatorEntity](),
-      Entity[UserProfile](unique = Set() + Seq("identityId") + Seq("username")),
+      Entity[TimeZone](unique = Set() + Seq("uuid")),
+      Entity[UserProfile](unique = Set() + Seq("identityId")),
       /**
        * Secure Social Entities
        */

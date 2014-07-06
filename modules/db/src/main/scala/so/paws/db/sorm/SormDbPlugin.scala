@@ -2,6 +2,7 @@ package so.paws.db.sorm
 
 import java.net.URI
 
+import org.joda.time.DateTimeZone
 import play.api.{Logger, Play, Application}
 import sorm.{Entity, Instance, InitMode}
 import scala.reflect.runtime.universe
@@ -33,7 +34,7 @@ class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
           url = urlString,
           user = dbUri.getUserInfo.split(":")(0),
           password = dbUri.getUserInfo.split(":")(1),
-          initMode = InitMode.DropAllCreate,
+          initMode = InitMode.Create,
           poolSize = 64
         )
       case None =>

@@ -111,4 +111,15 @@ define(['angular'], (angular) ->
 
               if (response["password"])
                 $scope.form.errors["password.password2"] = response["password"]
+  users.controller 'TimeZoneController',
+    class TimeZoneController
+      constructor: ($scope, $http, $location, $routeParams) ->
+        $scope.form = {} if $scope.form is undefined
+
+        $scope.addTimeZone = ->
+          $http.post('users/timezone/add', $scope.form)
+          .success () ->
+              $location.path("home")
+          .error (response) ->
+              $scope.form.errors = response
 )
