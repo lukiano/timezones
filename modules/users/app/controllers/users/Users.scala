@@ -2,16 +2,13 @@ package controllers.users
 
 import _root_.java.util.UUID
 
-import com.typesafe.plugin._
 import org.joda.time.DateTimeZone
 import play.Logger
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data.validation.Constraints._
 import play.api.mvc._
 import play.api.templates.Txt
-import securesocial.controllers.Registration._
-import securesocial.controllers.TemplatesPlugin
+import securesocial.core.providers.UsernamePasswordProvider
 import scala.io.Source
 import scala.util.Random
 import play.api.libs.json._
@@ -119,7 +116,6 @@ abstract class Users extends Controller with SecureSocial {
         user <- userDb.findUserProfile(authenticator.identityId)
       } yield user
       profile.fold[SimpleResult](Forbidden("")) { p: UserProfile =>
-        Logger.info(p.toString)
         Ok(views.html.users.home(p))
       }
     }
@@ -127,12 +123,13 @@ abstract class Users extends Controller with SecureSocial {
 
   val validCities: Set[String] = {
     import scala.collection.JavaConverters._
-    DateTimeZone.getProvider.getAvailableIDs.asScala.toSet.map{ s: String => s.toLowerCase }
+    DateTimeZone.getProvider.getAvailableIDs.asScala.toSet
   }
 
-  val validCity: String => Boolean = city => {
-    val l = city.trim.toLowerCase.replace(' ', '_')
-    validCities exists { _ endsWith l }
+  val validCity: String => Boolean = s => {
+    val l = s.trim.toLowerCase.replace(' ', '_')
+    Logger.debug(s"Validating city $l")
+    validCities exists { city => city.toLowerCase endsWith l }
   }
 
   case class NewTimeZone(name: String, city: String)
@@ -159,8 +156,8 @@ abstract class Users extends Controller with SecureSocial {
           } yield user
           profile.fold[SimpleResult](Forbidden("")) { p: UserProfile =>
             val cityInLowercase = ntz.city.trim.toLowerCase.replace(' ', '_')
-            validCities find { city => city endsWith cityInLowercase } match {
-              case None => BadRequest(Txt(""))
+            validCities find { city => city.toLowerCase endsWith cityInLowercase } match {
+              case None => BadRequest(Txt(cityInLowercase))
               case Some(timeZoneOfCity) =>
                 val tz = TimeZone(UUID.randomUUID().toString, ntz.name, ntz.city, timeZoneOfCity)
                 val persistedTz: TimeZone = userDb.save(tz)
@@ -171,6 +168,63 @@ abstract class Users extends Controller with SecureSocial {
           }
         }
       )
+  }
+  /* REST API */
+  def restTimeZones = Action {
+    implicit request =>
+      val timezones: Option[Set[TimeZone]] = for {
+        email <- request.headers.get("TZ_USER")
+        pass <- request.headers.get("TZ_PASS")
+        socialUser <- userDb.findByEmailAndProvider(email, UsernamePasswordProvider.UsernamePassword)
+        savedPass <- socialUser.passwordInfo if Registry.hashers.currentHasher.matches(savedPass, pass)
+        userProfile <- userDb.findUserProfile(socialUser.identityId)
+      } yield userProfile.timezones
+      timezones.fold[SimpleResult](Forbidden("")) { tz: Set[TimeZone] => Ok(Json.toJson(tz)) }
+  }
 
+  def restTimeZone(zoneName: String) = Action {
+    implicit request =>
+      val timezones: Option[Set[TimeZone]] = for {
+        email <- request.headers.get("TZ_USER")
+        pass <- request.headers.get("TZ_PASS")
+        socialUser <- userDb.findByEmailAndProvider(email, UsernamePasswordProvider.UsernamePassword)
+        savedPass <- socialUser.passwordInfo if Registry.hashers.currentHasher.matches(savedPass, pass)
+        userProfile <- userDb.findUserProfile(socialUser.identityId)
+      } yield userProfile.timezones
+      timezones.fold[SimpleResult] (Forbidden("")) { tz: Set[TimeZone] =>
+        tz.find(_.name == zoneName) match {
+          case None => NotFound("")
+          case Some(value) => Ok(Json.toJson(value))
+        }
+      }
+  }
+
+  def restAddTimeZone() = Action(parse.json) {
+    implicit request =>
+      val userProfile: Option[UserProfile] = for {
+        email <- request.headers.get("TZ_USER")
+        pass <- request.headers.get("TZ_PASS")
+        socialUser <- userDb.findByEmailAndProvider(email, UsernamePasswordProvider.UsernamePassword)
+        savedPass <- socialUser.passwordInfo if Registry.hashers.currentHasher.matches(savedPass, pass)
+        userProfile <- userDb.findUserProfile(socialUser.identityId)
+      } yield userProfile
+      userProfile.fold[SimpleResult] (Forbidden("")) { p: UserProfile =>
+        newTimeZoneForm.bind(request.body).fold (
+          errors => {
+            BadRequest(Txt(""))
+          },
+          ntz => {
+            val cityInLowercase = ntz.city.trim.toLowerCase.replace(' ', '_')
+            validCities find { city => city.toLowerCase endsWith cityInLowercase } match {
+              case None => BadRequest(Txt(cityInLowercase))
+              case Some(timeZoneOfCity) =>
+                val tz = TimeZone(UUID.randomUUID().toString, ntz.name, ntz.city, timeZoneOfCity)
+                val persistedTz: TimeZone = userDb.save(tz)
+                val updatedProfile = p.copy(timezones = p.timezones + persistedTz)
+                userDb.save(updatedProfile)
+                Created(Txt("")).withHeaders("Location" -> s"/users/rest/timezone/${tz.name}")
+            }
+          })
+      }
   }
 }
