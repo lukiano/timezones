@@ -1,5 +1,6 @@
 package models.users.sorm
 
+import play.api.Logger
 import securesocial.core._
 import org.joda.time.DateTime
 import securesocial.core.IdentityId
@@ -31,8 +32,10 @@ object SormUserDb extends UserDb {
   def save(identity: Identity): SocialUser = {
     val socialUser: Option[SocialUser with Persisted] = db.query[SocialUser].whereEqual("email", identity.email).fetchOne()
     socialUser match {
-      case None => val newUser = SocialUser(
-          db.save(identity.identityId),
+      case None =>
+        val savedIdentityId = db.save(identity.identityId)
+        val newUser = SocialUser(
+          savedIdentityId,
           identity.firstName,
           identity.lastName,
           identity.fullName,
@@ -43,7 +46,7 @@ object SormUserDb extends UserDb {
           identity.oAuth2Info.map(e => db.save(e)),
           identity.passwordInfo.map(e => db.save(e))
         )
-        val newUserProfile = UserProfile(identity.identityId, Set())
+        val newUserProfile = UserProfile(savedIdentityId, Set())
         db.transaction {
           db.save(newUser)
           db.save(newUserProfile)
