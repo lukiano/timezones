@@ -1,5 +1,3 @@
-GET        /                               controllers.Assets.at(path="/public", file="/common/html/index.html")
-GET        /common/navigation              controllers.common.Application.navigation()
-GET        /common/setup-require.js        controllers.common.Application.setupRequireJs()
-GET        /common/*file                   controllers.Assets.at(path="/public/common", file)
-GET        /webjars/*file                  controllers.WebJarAssets.at(file)
+GET        /navigation              controllers.common.Application.navigation()
+GET        /setup-require.js        controllers.common.Application.setupRequireJs()
+GET        /*file                   controllers.common.Assets.at(path="/public/common", file)

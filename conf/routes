@@ -1,2 +1,4 @@
-->         /                          common.Routes
-->         /users                     users.Routes
+GET        /                     controllers.Assets.at(path="/public", file="index.html")
+GET        /webjars/*file        controllers.WebJarAssets.at(file)
+->         /common               common.Routes
+->         /users                users.Routes
