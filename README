@@ -4,3 +4,5 @@ DATABASE_URL - Example: postgres://toptal:toptal@localhost/toptal
 SENDGRID_USERNAME
 SENDGRID_PASSWORD
 REDISTOGO_URL - Example: redis://localhost:6379
+
+There is a running demo of this exercise in http://afternoon-eyrie-6403.herokuapp.com/
