@@ -6,6 +6,7 @@ require([
   'angular',
   'angular-resource',
   'angular-route',
+  '/ng-table.js'
   '/users/javascripts/users-app.js'
 ], (angular) ->
 

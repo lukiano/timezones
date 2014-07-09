@@ -2,7 +2,7 @@
 
 define(['angular'], (angular) ->
 
-  users = angular.module('users', ['ngResource', 'ngRoute'])
+  users = angular.module('users', ['ngResource', 'ngRoute', 'ngTable'])
 
   users.config [
     '$routeProvider',
@@ -111,15 +111,40 @@ define(['angular'], (angular) ->
 
               if (response["password"])
                 $scope.form.errors["password.password2"] = response["password"]
-  users.controller 'TimeZoneController',
-    class TimeZoneController
-      constructor: ($scope, $http, $location, $routeParams) ->
+  users.controller 'TimeZoneAjaxController',
+    class TimeZoneAjaxController
+      constructor: ($scope, $timeout, $resource, ngTableParams) ->
+        Zones = $resource('/users/homeJson');
+        firstData =
+          page: 1,            # show first page
+          count: 10,          # count per page
+          sorting:
+            name: 'asc'     # initial sorting
+
+        $scope.tableParams = new ngTableParams(firstData, {
+          total: 0,           # length of data
+          getData: ($defer, params) ->
+            # ajax request to server
+            Zones.get params.url(),
+                    (data) ->
+                      $timeout () ->
+                        # update table params
+                        params.total data.total
+                        # set new data
+                        $defer.resolve data.result
+                      500
+        })
+        $scope.$on('reloadEvent', (event, args) -> $scope.tableParams.reload())
+
+  users.controller 'TimeZoneAddController',
+    class TimeZoneAddController
+      constructor: ($scope, $http) ->
         $scope.form = {} if $scope.form is undefined
 
         $scope.addTimeZone = ->
           $http.post('users/timezone/add', $scope.form)
           .success () ->
-              $location.path("home")
+              $scope.$emit('reloadEvent', {})
           .error (response) ->
               $scope.form.errors = response
 )

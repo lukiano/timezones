@@ -1,0 +1,40 @@
+<paws-header nav-module="users" nav-service="navigation" h1="You are logged in."></paws-header>
+<div class="container" ng-controller="TimeZoneAjaxController">
+    <h3>Your defined time zones&nbsp;<button ng-click="tableParams.reload()" class="btn btn-default">Reload</button></h3>
+
+    <table ng-table="tableParams" show-filter="true" class="table table-striped table-bordered table-condensed">
+        <tbody>
+        <tr ng-repeat="tz in $data">
+            <td data-title="'Name'" filter="{ 'name': 'text' }" sortable="name">{{tz.name}}</td>
+            <td data-title="'City'" filter="{ 'city': 'text' }" sortable="city">{{tz.city}}</td>
+            <td data-title="'Time there'">{{tz.time}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <form ng-controller="TimeZoneAddController" ng-submit="addTimeZone()" class="form-container" ng-class='{"has-error": form.errors.message != null}'>
+        <h3>New City / TimeZone</h3>
+        <paws-input
+                name="name"
+                model="form.name"
+                type="text"
+                errors="form.errors['name']"
+                placeholder="Name"
+                required="true"></paws-input>
+
+        <paws-input
+                name="city"
+                model="form.city"
+                type="text"
+                errors="form.errors['city']"
+                placeholder="City"
+                required="true"></paws-input>
+
+        <div ng-show="form.errors.message" class="text-center alert alert-danger">
+            {{form.errors.message}}
+        </div>
+
+        <div class=" text-center">
+            <paws-submit value="Add TimeZone" class="primary"></paws-submit>
+        </div>
+    </form>
+</div>

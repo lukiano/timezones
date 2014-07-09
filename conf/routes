@@ -2,3 +2,4 @@ GET        /                     controllers.Assets.at(path="/public", file="ind
 GET        /webjars/*file        controllers.WebJarAssets.at(file)
 ->         /common               common.Routes
 ->         /users                users.Routes
+GET        /*file                controllers.Assets.at(path="/public", file)

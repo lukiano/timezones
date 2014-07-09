@@ -10,7 +10,7 @@ import play.api.mvc._
 import play.api.templates.Txt
 import securesocial.core.providers.UsernamePasswordProvider
 import scala.io.Source
-import scala.util.Random
+import scala.util.{Try, Random}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import models.users.{TimeZone, UserDb, UserProfile}
@@ -117,6 +117,91 @@ abstract class Users extends Controller with SecureSocial {
       } yield user
       profile.fold[SimpleResult](Forbidden("")) { p: UserProfile =>
         Ok(views.html.users.home(p))
+      }
+    }
+  }
+
+  case class TimeZoneDTO(name: String, city: String, time: String)
+
+  sealed trait SortingType {
+    def ordering: Ordering[String]
+  }
+  case object Asc extends SortingType {
+    val ordering = Ordering[String]
+  }
+  case object Desc extends SortingType {
+    val ordering = Ordering[String].reverse
+  }
+  private val toSorting: String => Option[SortingType] = _.trim.toLowerCase match {
+    case "asc" => Some(Asc)
+    case "desc" => Some(Desc)
+    case _ => None
+  }
+  case class Sorting(ex: Extractor, sortingType: SortingType)
+  private val sortingProcess: Sorting => Process = s =>
+    data => data.sortBy[String](s.ex)(s.sortingType.ordering)
+
+  type Extractor = TimeZone => String
+  private val nameExtractor: Extractor = tz => tz.name.toLowerCase
+  private val cityExtractor: Extractor = tz => tz.city.toLowerCase
+
+  case class Filter(ex: Extractor, filtering: String)
+  private val filterProcess: Filter => Process = f =>
+    data => data filter { tz => f.ex(tz).startsWith(f.filtering) }
+
+  private val toInt: String => Option[Int] = s => Try(s.toInt).toOption
+
+  type Data = Seq[TimeZone]
+  type Process = Data => Data
+  private val identity: Process = d => d
+  implicit final class OptionProcess[A](op: Option[A]) {
+    def toProcess(f: A => Process): Process = op match {
+      case None => identity
+      case Some(a) => f(a)
+    }
+  }
+
+  case class Page(page: Int, elementsPerPage: Int)
+
+  def homeJson = SecuredAction {
+    implicit request => {
+      val profile = for {
+        authenticator <- SecureSocial.authenticatorFromRequest
+        user <- userDb.findUserProfile(authenticator.identityId)
+      } yield user
+      profile.fold[SimpleResult](Forbidden("")) { p: UserProfile =>
+        val paging = (for {
+          c <- request.getQueryString("count") flatMap toInt
+          p <- request.getQueryString("page") flatMap toInt filter { _ > 1 }
+        } yield Page(p, c)) toProcess { page =>
+          data => data.drop((page.page - 1) * page.elementsPerPage).take(page.elementsPerPage)
+        }
+
+        val filterName = request.getQueryString("filter[name]") map { prefix =>
+          Filter(nameExtractor, prefix.toLowerCase) } toProcess filterProcess
+        val filterCity = request.getQueryString("filter[city]") map { prefix =>
+          Filter(cityExtractor, prefix.toLowerCase) } toProcess filterProcess
+
+        val sortingName = request.getQueryString("sorting[name]") flatMap toSorting map { sortingType =>
+          Sorting(nameExtractor, sortingType) } toProcess sortingProcess
+        val sortingCity = request.getQueryString("sorting[city]") flatMap toSorting map { sortingType =>
+          Sorting(cityExtractor, sortingType) } toProcess sortingProcess
+
+        val filteredValues: Data = p.timezones.toSeq
+        val process = paging andThen filterName andThen filterCity andThen sortingName andThen sortingCity
+
+        val seqOfTimeZones: Seq[JsObject] = process(filteredValues) map { tz =>
+          Json.obj(
+            "name" -> tz.name,
+            "city" -> tz.city,
+            "time" -> tz.prettyTime(0)
+          )
+        }
+        val dto = Json.obj(
+          "total" -> seqOfTimeZones.size,
+          "result" -> JsArray(seqOfTimeZones)
+        )
+        Ok(dto)
       }
     }
   }
