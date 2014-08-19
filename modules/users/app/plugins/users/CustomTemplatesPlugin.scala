@@ -1,6 +1,6 @@
 package plugins.users
 
-import securesocial.controllers.DefaultTemplatesPlugin
+import securesocial.controllers.ViewTemplates
 import play.api.Application
 import play.api.mvc.{RequestHeader, Request}
 import securesocial.controllers.Registration.RegistrationInfo
@@ -12,7 +12,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.templates.{Txt, Html}
 
 
-class CustomTemplatesPlugin(application: Application) extends DefaultTemplatesPlugin(application) {
+class CustomTemplatesPlugin(application: Application) extends ViewTemplates.Default(application) {
   implicit val changeInfoFormat = Json.format[ChangeInfo]
   implicit val registrationInfoFormat = Json.format[RegistrationInfo]
 

@@ -4,15 +4,16 @@ import play.api.Logger
 import securesocial.core._
 import org.joda.time.DateTime
 import securesocial.core.IdentityId
-import securesocial.core.providers.Token
+import securesocial.core.providers.MailToken
 import models.users.{TimeZone, UserProfile, UserDb}
+import securesocial.core.services.UserService
 import so.paws.db.DbPlugin
 import com.typesafe.plugin._
 import sorm.{Persisted, Instance}
 import play.api.Play.current
 
 
-object SormUserDb extends UserDb {
+object SormUserDb extends UserService {
   val db: Instance = use[DbPlugin[Instance]].db
 
   def find(identityId: IdentityId): Option[SocialUser] = {

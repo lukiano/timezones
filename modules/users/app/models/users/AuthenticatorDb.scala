@@ -1,6 +1,6 @@
 package models.users
 
-import securesocial.core.Authenticator
+import securesocial.core.authenticator.Authenticator
 import plugins.users.AuthenticatorEntity
 
 abstract class AuthenticatorDb {

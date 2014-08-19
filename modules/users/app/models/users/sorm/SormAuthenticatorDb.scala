@@ -5,7 +5,7 @@ import models.users.AuthenticatorDb
 import sorm.Instance
 import com.typesafe.plugin._
 import plugins.users.AuthenticatorEntity
-import so.paws.db.DbPlugin
+import com.lucho.tzv.db.DbPlugin
 import play.api.Play.current
 
 

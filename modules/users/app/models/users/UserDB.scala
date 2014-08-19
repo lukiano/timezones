@@ -4,8 +4,7 @@ import java.util.Locale
 
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, DateTime}
-import securesocial.core.{Identity, SocialUser, IdentityId}
-import securesocial.core.providers.Token
+import securesocial.core.{BasicProfile, Identity, SocialUser, IdentityId}
 
 case class Authority(identityId: IdentityId, name: String)
 
@@ -29,14 +28,14 @@ object TimeZone {
   val utc: DateTimeZone = DateTimeZone.UTC
 }
 
-case class UserProfile(identityId: IdentityId, timezones: Set[TimeZone])
+case class UserProfile(identityId: UserProfile, timezones: Set[TimeZone])
 
 abstract class UserDb {
-  def find(identityId: IdentityId): Option[SocialUser]
+  def find(identityId: UserProfile): Option[BasicProfile]
 
-  def findByEmailAndProvider(email: String, providerId: String): Option[SocialUser]
+  def findByEmailAndProvider(email: String, providerId: String): Option[BasicProfile]
 
-  def save(identity: Identity): SocialUser
+  def save(identity: Identity): BasicProfile
 
   def save(token: Token)
 
@@ -46,7 +45,7 @@ abstract class UserDb {
 
   def deleteExpiredTokens()
 
-  def findAll: List[SocialUser]
+  def findAll: List[BasicProfile]
 
   def findEmailByTokenUuid(tokenUuid: String): Option[String]
 

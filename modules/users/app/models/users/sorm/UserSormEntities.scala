@@ -1,5 +1,6 @@
 package models.users.sorm
 
+import com.lucho.tzv.db.sorm.SormEntities
 import models.users.{TimeZone, UserProfile, Authority}
 import plugins.users.AuthenticatorEntity
 import securesocial.core._
@@ -8,7 +9,6 @@ import securesocial.core.OAuth1Info
 import securesocial.core.OAuth2Info
 import securesocial.core.PasswordInfo
 import securesocial.core.providers.Token
-import so.paws.db.sorm.SormEntities
 import sorm.Entity
 
 object UserSormEntities extends SormEntities {

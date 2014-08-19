@@ -6,7 +6,7 @@ import securesocial.core.{IdentityId, Identity}
 import models.users.UserDb
 
 
-abstract class UserServicePlugin(application: Application) extends securesocial.core.UserServicePlugin(application) {
+abstract class UserServicePlugin extends securesocial.core.UserService {
   val userDb: UserDb
 
   def find(id: IdentityId): Option[Identity] = userDb.find(id)

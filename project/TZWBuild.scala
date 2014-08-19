@@ -14,7 +14,7 @@ object TZWBuild extends Build {
   lazy val commonSettings = Seq[Setting[_]](
     organization := "com.lucho.tzv",
     version := "2.0-SNAPSHOT",
-    scalaVersion := "2.10.4"
+    scalaVersion := "2.11.2"
   )
 
   lazy val db = Project(id = "db", base = file("modules/db"), settings = commonSettings).enablePlugins(play.PlayScala)
@@ -56,9 +56,12 @@ object TZWBuild extends Build {
         Resolver.sonatypeRepo("snapshots")
       ),
       libraryDependencies ++= Seq(
+        "org.webjars" %% "webjars-play" % "2.3.0",
         "com.newrelic.agent.java" % "newrelic-agent" % "3.8.0",
         "com.newrelic.agent.java" % "newrelic-api" % "3.8.0",
-        "com.typesafe.play.plugins" %% "play-plugins-redis" % "2.3.0"
+        "biz.source_code" %  "base64coder" % "2010-12-19",
+        "com.typesafe.play" %% "play-cache" % "2.3.3",
+        "org.sedis" %%  "sedis" % "1.2.2"
       )
     ).aggregate(common, db, users)
 

@@ -7,7 +7,7 @@ import play.Logger
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc._
-import play.api.templates.Txt
+import play.twirl.api.Txt
 import securesocial.core.providers.UsernamePasswordProvider
 import scala.io.Source
 import scala.util.{Try, Random}
@@ -16,7 +16,6 @@ import play.api.libs.functional.syntax._
 import models.users.{TimeZone, UserDb, UserProfile}
 import securesocial.core._
 import securesocial.core.OAuth1Info
-import securesocial.core.IdentityId
 import models.common.{Navigation, NavigationItem, NavigationMenu}
 
 abstract class Users extends Controller with SecureSocial {
@@ -72,39 +71,41 @@ abstract class Users extends Controller with SecureSocial {
   }
 
   implicit val authenticationMethodFormat = Json.format[AuthenticationMethod]
-  implicit val identityIdFormat = Json.format[IdentityId]
+  implicit val identityIdFormat = Json.format[UserProfile]
   implicit val oAuth1InfoFormat = Json.format[OAuth1Info]
   implicit val oAuth2InfoFormat = Json.format[OAuth2Info]
   implicit val passwordInfoFormat = Json.format[PasswordInfo]
   implicit val socialUserJsonFormat = (
-    (__ \ 'identityId).format[IdentityId] and
-      (__ \ 'firstName).format[String] and
-      (__ \ 'lastName).format[String] and
-      (__ \ 'fullName).format[String] and
+    (__ \ 'providerId).format[String] and
+      (__ \ 'userId).format[String] and
+      (__ \ 'firstName).formatNullable[String] and
+      (__ \ 'lastName).formatNullable[String] and
+      (__ \ 'fullName).formatNullable[String] and
       (__ \ 'email).formatNullable[String] and
       (__ \ 'avatarUrl).formatNullable[String] and
       (__ \ 'authenticationMethod).format[AuthenticationMethod] and
       (__ \ 'oAuth1Info).formatNullable[OAuth1Info] and
       (__ \ 'oAuth2Info).formatNullable[OAuth2Info] and
       (__ \ 'passwordInfo).formatNullable[PasswordInfo]
-    )(SocialUser.apply(
-    _: IdentityId,
+    )(BasicProfile.apply(
     _: String,
     _: String,
-    _: String,
+    _: Option[String],
+    _: Option[String],
+    _: Option[String],
     _: Option[String],
     _: Option[String],
     _: AuthenticationMethod,
     _: Option[OAuth1Info],
     _: Option[OAuth2Info],
     _: Option[PasswordInfo]
-  ), unlift(SocialUser.unapply))
+  ), unlift(BasicProfile.unapply))
   implicit val timeZoneFormat = Json.format[TimeZone]
   implicit val userProfileFormat = Json.format[UserProfile]
 
   def getUsers = SecuredAction {
     implicit request => {
-      val allUsers: List[SocialUser] = userDb.findAll
+      val allUsers: List[BasicProfile] = userDb.findAll
       Ok(Json.toJson(allUsers))
     }
   }

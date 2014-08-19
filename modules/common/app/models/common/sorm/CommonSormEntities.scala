@@ -1,6 +1,6 @@
 package models.common.sorm
 
-import so.paws.db.sorm.SormEntities
+import com.lucho.tzv.db.sorm.SormEntities
 import sorm.Entity
 import models.common.{NavigationItem, NavigationMenu, Navigation}
 

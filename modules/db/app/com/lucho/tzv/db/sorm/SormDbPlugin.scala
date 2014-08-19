@@ -1,13 +1,13 @@
-package so.paws.db.sorm
+package com.lucho.tzv.db.sorm
 
 import java.net.URI
 
-import org.joda.time.DateTimeZone
-import play.api.{Logger, Play, Application}
-import sorm.{Entity, Instance, InitMode}
-import scala.reflect.runtime.universe
-import so.paws.db.DbPlugin
+import com.lucho.tzv.db.DbPlugin
+import play.api.{Application, Play}
+import sorm.{Entity, InitMode, Instance}
+
 import scala.collection.JavaConversions._
+import scala.reflect.runtime.universe
 
 class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
 
@@ -22,13 +22,6 @@ class SormDbPlugin(application: Application) extends DbPlugin[Instance] {
         val dbUri = new URI(url)
         val port = if (dbUri.getPort == -1) "" else ":" + dbUri.getPort
         val urlString = "jdbc:postgresql://"+ dbUri.getHost + port + dbUri.getPath
-/*
-        Logger(classOf[SormDbPlugin]).info(url)
-        Logger(classOf[SormDbPlugin]).info(dbUri.getHost)
-        Logger(classOf[SormDbPlugin]).info(Integer.toString(dbUri.getPort))
-        Logger(classOf[SormDbPlugin]).info(dbUri.getUserInfo)
-        Logger(classOf[SormDbPlugin]).info(urlString)
-*/
         new Instance(
           entities = entities,
           url = urlString,

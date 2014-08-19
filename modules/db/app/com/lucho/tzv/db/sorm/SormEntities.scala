@@ -1,4 +1,4 @@
-package so.paws.db.sorm
+package com.lucho.tzv.db.sorm
 
 import sorm.Entity
 

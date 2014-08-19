@@ -1,4 +1,4 @@
-package so.paws.db
+package com.lucho.tzv.db
 
 import play.api.Plugin
 
